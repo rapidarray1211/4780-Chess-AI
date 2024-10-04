@@ -25,3 +25,5 @@ Steps to set up repo
 1. Install python
 
 2. Do pip install chess (for windows python -m pip install chess)
+
+3. Download and extract data file from https://database.lichess.org/#standard_games (suggest using older data)
