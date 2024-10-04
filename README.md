@@ -19,3 +19,9 @@ Steps and deliverables for initial presentation/report
 
 
 Links to python libraries and other resources
+
+Steps to set up repo
+
+1. Install python
+
+2. Do pip install chess (for windows python -m pip install chess)
