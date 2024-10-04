@@ -27,3 +27,16 @@ Steps to set up repo
 2. Do pip install chess (for windows python -m pip install chess)
 
 3. Download and extract data file from https://database.lichess.org/#standard_games (suggest using older data)
+
+TODOS
+
+1. Write parsing instructions and helper functions for pgn files parsing
+
+2. Add pytorch libraries and functionality
+
+3. Create chess interface
+
+4. Create machine learning model
+
+5. Train the AI against pgn files through lichess dataset. Use reinforcement learning using legal moves against best moves. 
+
