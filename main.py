@@ -1,20 +1,18 @@
-import chess
-import chess.pgn
+from pgn_parser import load_pgn_file, get_move_sequence
+from board import initialize_board, make_move
 
-board = chess.Board()
+def play_game_pgn(pgn_file):
+    # Load games from the PGN file
+    games = load_pgn_file(pgn_file)
+    if games:
+        print(f"Loaded {len(games)} games from {pgn_file}.")
+        
+        move_sequence = get_move_sequence(games[0])
+        print("Move sequence (UCI):", move_sequence)
+        
+        board = initialize_board()
+        for move in move_sequence:
+            make_move(board, move)
 
-print(board.legal_moves)
-
-print(board)
-
-pgn = open("data/lichess_db_standard_rated_2014-07.pgn")
-
-first_game = chess.pgn.read_game(pgn)
-
-board = first_game.board()
-for move in first_game.mainline_moves():
-    board.push(move)
-    print(board.legal_moves)
-    print(board)
-
-print(board)
+if __name__ == "__main__":
+    play_game_pgn("data/lichess_db_standard_rated_2013-12.pgn")
