@@ -3,7 +3,8 @@ from board import initialize_board, make_move
 
 def play_game_pgn(pgn_file):
     # Load games from the PGN file
-    games = load_pgn_file(pgn_file)
+    print(f"Loading games from {pgn_file}.")
+    games = load_pgn_file(pgn_file, 100)
     if games:
         print(f"Loaded {len(games)} games from {pgn_file}.")
         
@@ -15,4 +16,4 @@ def play_game_pgn(pgn_file):
             make_move(board, move)
 
 if __name__ == "__main__":
-    play_game_pgn("data/lichess_db_standard_rated_2013-12.pgn")
+    play_game_pgn("data/lichess_dataset_1.pgn")
