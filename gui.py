@@ -302,18 +302,18 @@ font = pygame.font.SysFont(None, 36)  # Create a font for the text
 board = chess.Board()
 
 #load piece images
-pieces = {'p': pygame.image.load('black-pawn.png').convert_alpha(),
-          'n': pygame.image.load('black-knight.png').convert_alpha(),
-          'b': pygame.image.load('black-bishop.png').convert_alpha(),
-          'r': pygame.image.load('black-rook.png').convert_alpha(),
-          'q': pygame.image.load('black-queen.png').convert_alpha(),
-          'k': pygame.image.load('black-king.png').convert_alpha(),
-          'P': pygame.image.load('white-pawn.png').convert_alpha(),
-          'N': pygame.image.load('white-knight.png').convert_alpha(),
-          'B': pygame.image.load('white-bishop.png').convert_alpha(),
-          'R': pygame.image.load('white-rook.png').convert_alpha(),
-          'Q': pygame.image.load('white-queen.png').convert_alpha(),
-          'K': pygame.image.load('white-king.png').convert_alpha(),
+pieces = {'p': pygame.image.load('data/black-pawn.png').convert_alpha(),
+          'n': pygame.image.load('data/black-knight.png').convert_alpha(),
+          'b': pygame.image.load('data/black-bishop.png').convert_alpha(),
+          'r': pygame.image.load('data/black-rook.png').convert_alpha(),
+          'q': pygame.image.load('data/black-queen.png').convert_alpha(),
+          'k': pygame.image.load('data/black-king.png').convert_alpha(),
+          'P': pygame.image.load('data/white-pawn.png').convert_alpha(),
+          'N': pygame.image.load('data/white-knight.png').convert_alpha(),
+          'B': pygame.image.load('data/white-bishop.png').convert_alpha(),
+          'R': pygame.image.load('data/white-rook.png').convert_alpha(),
+          'Q': pygame.image.load('data/white-queen.png').convert_alpha(),
+          'K': pygame.image.load('data/white-king.png').convert_alpha(),
           
           }
           
