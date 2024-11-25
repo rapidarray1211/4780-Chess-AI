@@ -1,2 +1,7 @@
 *.pgn
 *.zst
+*.csv
+play_game.py
+stockfish-windows-x86-64/
+*model2.keras
+model1.keras
