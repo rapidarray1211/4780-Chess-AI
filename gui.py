@@ -238,7 +238,7 @@ def main(BOARD):
         
         if BOARD.turn == ai_player:
             # AI's turn
-            ai_move = engine.predict_best_move(BOARD)
+            ai_move = engine.predict_best_move(BOARD, True)
             BOARD.push(ai_move)
             continue
         
