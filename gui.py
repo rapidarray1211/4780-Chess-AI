@@ -3,6 +3,7 @@ import pygame
 import chess
 import math
 from stockfish import generate_move
+import random
 
 SQUARE_SIZE = 100
 
@@ -211,6 +212,9 @@ def main(BOARD):
     selected_piece = None
     selected_square = None
     moves = []
+    
+    human_player = chess.WHITE if random.choice([True, False]) else chess.BLACK
+    ai_player = chess.BLACK if human_player == chess.WHITE else chess.WHITE
 
     Running = True
     while Running:
@@ -224,11 +228,21 @@ def main(BOARD):
         highlight_moves(scrn, BOARD, moves, selected_square)
         pygame.display.flip()
         
-  
         if outcome is not None:
             # Game has ended
             display_game_over(scrn, outcome, BOARD)
             pygame.time.wait(3000)  # Wait 3 seconds before closing
+            Running = False
+            continue
+        
+        if BOARD.turn == ai_player:
+            # AI's turn
+            move = generate_move(BOARD)
+            BOARD.push(move)
+            selected_square = None
+            selected_piece = None
+            moves = []
+            continue
         
         for event in pygame.event.get():
             # If event type is QUIT, exit the game
@@ -247,7 +261,7 @@ def main(BOARD):
                 # If there is no piece selected and a piece is clicked
                 if selected_square is None:
                     piece = BOARD.piece_at(clicked_square)
-                    if piece:  # There is a piece on the square
+                    if piece and piece.color == human_player:  # There is a piece on the square and it's the human's turn
                         selected_piece = piece
                         selected_square = clicked_square
                         moves = get_legal_moves(BOARD, selected_square)
