@@ -3,6 +3,8 @@ import pygame
 import chess
 import math
 from stockfish import generate_move
+import random
+from engine.chessEngine import ChessEngine
 
 SQUARE_SIZE = 100
 
@@ -11,9 +13,10 @@ SCREENY = 800
 
 #https://blog.devgenius.io/simple-interactive-chess-gui-in-python-c6d6569f7b6c
 
+engine = ChessEngine("models/movepredictorV2_24.keras", 1, 3)
+print("testing")
 
-
-def highlight_king_sqaure(scrn, outcome, BOARD):
+def highlight_king_square(scrn, outcome, BOARD):
     # Find the position of the checkmated king
     king_square = None
     if outcome.winner == chess.WHITE:
@@ -211,6 +214,9 @@ def main(BOARD):
     selected_piece = None
     selected_square = None
     moves = []
+    
+    human_player = chess.WHITE if random.choice([True, False]) else chess.BLACK
+    ai_player = chess.BLACK if human_player == chess.WHITE else chess.WHITE
 
     Running = True
     while Running:
@@ -219,16 +225,22 @@ def main(BOARD):
 
         draw_board(scrn)
         if outcome is not None:
-            highlight_king_sqaure(scrn, outcome, BOARD)
+            highlight_king_square(scrn, outcome, BOARD)
         draw_pieces(scrn, BOARD)
         highlight_moves(scrn, BOARD, moves, selected_square)
         pygame.display.flip()
         
-  
         if outcome is not None:
             # Game has ended
             display_game_over(scrn, outcome, BOARD)
             pygame.time.wait(3000)  # Wait 3 seconds before closing
+            break
+        
+        if BOARD.turn == ai_player:
+            # AI's turn
+            ai_move = engine.predict_best_move(BOARD, True)
+            BOARD.push(ai_move)
+            continue
         
         for event in pygame.event.get():
             # If event type is QUIT, exit the game
@@ -247,7 +259,7 @@ def main(BOARD):
                 # If there is no piece selected and a piece is clicked
                 if selected_square is None:
                     piece = BOARD.piece_at(clicked_square)
-                    if piece:  # There is a piece on the square
+                    if piece and piece.color == human_player:  # There is a piece on the square and it's the human's turn
                         selected_piece = piece
                         selected_square = clicked_square
                         moves = get_legal_moves(BOARD, selected_square)
