@@ -2,6 +2,7 @@
 import pygame
 import chess
 import math
+from stockfish import generate_move
 
 SQUARE_SIZE = 100
 

@@ -14,10 +14,15 @@ def evaluate_move_stockfish(board: chess.Board):
     evaluation = engine.analyse(board, chess.engine.Limit(depth=10))
     score = evaluation["score"].relative
 
+    move_recommend = generate_move(board)
+
     if score.is_mate():
         print(f"Stockfish Level {level}: Mate in {score.mate()}")
+        print(f"Recommended move: {move_recommend}")
     else:
         print(f"Stockfish Level {level}: Evaluation {score.score() / 100:.2f} (centipawns)\n")
+        print(f"Recommended move: {move_recommend}")
+
     
 def evaluate_game_stockfish(move_sequence):
     # Rather than evaluate a single move, this attempts to evaluate a move sequence
@@ -52,6 +57,11 @@ def evaluate_game_stockfish(move_sequence):
             print(f"Average centipawn loss: {average_accuracy:.2f}")
         else:
             print("No valid moves to evaluate.")
+
+def generate_move(board: chess.Board): 
+    result = engine.play(board, chess.engine.Limit(time=2.0))
+    print(result.move)
+    return result.move
 
 def close_engine():
     engine.quit()
