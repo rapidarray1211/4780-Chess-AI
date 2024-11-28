@@ -14,7 +14,6 @@ SCREENY = 800
 #https://blog.devgenius.io/simple-interactive-chess-gui-in-python-c6d6569f7b6c
 
 engine = ChessEngine("models/movepredictorV2_24.keras", 1, 3)
-print("testing")
 
 def highlight_king_square(scrn, outcome, BOARD):
     # Find the position of the checkmated king
