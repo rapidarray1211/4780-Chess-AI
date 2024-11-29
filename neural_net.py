@@ -7,9 +7,6 @@ from pgn_parser import *
 import numpy as np
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
-#############################################
-# Dataset Preparation
-#############################################
 
 def get_board_and_moves(game):
     board = game.board()
@@ -23,7 +20,6 @@ def get_board_and_moves(game):
 def encode_board(board: chess.Board):
     encoded = np.zeros((8, 8, 17), dtype=np.float32)
     
-    # Mapping from piece type and color to index
     piece_to_channel = {
         (chess.PAWN, chess.WHITE): 0,
         (chess.KNIGHT, chess.WHITE): 1,
@@ -38,7 +34,6 @@ def encode_board(board: chess.Board):
         (chess.QUEEN, chess.BLACK): 10,
         (chess.KING, chess.BLACK): 11
     }
-    # Other features
     WHITEATTACK = 12
     BLACKATTACK = 13
     PINNED = 14
@@ -49,40 +44,33 @@ def encode_board(board: chess.Board):
     mobility_map = np.zeros(64)
 
     for square in chess.SQUARES:
-        row = 7 - (square // 8) # get row from square
-        col = square % 8 # get column from square
+        row = 7 - (square // 8) 
+        col = square % 8 
        
-        # Encode Pieces (Channels 0-11)
         piece = board.piece_at(square)
         if piece is not None:
             channel = piece_to_channel[(piece.piece_type, piece.color)]
             encoded[row, col, channel] = 1.0
 
-        # Encode Attackers
         if board.is_attacked_by(chess.WHITE, square):
             encoded[row, col, WHITEATTACK] = 1.0
         if board.is_attacked_by(chess.BLACK, square):
             encoded[row, col, BLACKATTACK] = 1.0
 
-        # Encode Pinned
         if board.is_pinned(board.turn, square):
             encoded[row, col, PINNED] = 1.0
 
         
         for move in board.legal_moves:
-            # Encode Mobility
             mobility_map[move.from_square] += 1
 
-            # Encode Legal Move Destinations
             to_square = move.to_square
             r2 = 7 - (to_square // 8)
             c2 = to_square % 8
             encoded[r2, c2, LEGALDEST] = 1.0
     
-    # Normalize Mobility between 0 and 1
     mobility_map = (np.array(mobility_map) - np.min(mobility_map)) / (np.max(mobility_map) - np.min(mobility_map))
 
-    # Encode Normalized Mobility
     for i in range(len(mobility_map)):
         row = 7 - (i // 8)
         col = i % 8
@@ -100,9 +88,9 @@ def process_single_game(game):
     game_data, result = game
     
     weighting_scheme = {
-        "1-0": {chess.WHITE: 1.2, chess.BLACK: 0.8},      # White win
-        "0-1": {chess.WHITE: 0.8, chess.BLACK: 1.2},      # Black win
-        "1/2-1/2": {chess.WHITE: 1.0, chess.BLACK: 1.0}   # Draw
+        "1-0": {chess.WHITE: 1.2, chess.BLACK: 0.8},  
+        "0-1": {chess.WHITE: 0.8, chess.BLACK: 1.2},    
+        "1/2-1/2": {chess.WHITE: 1.0, chess.BLACK: 1.0}  
     }
     
     board_and_moves = get_board_and_moves(game_data)
@@ -113,8 +101,8 @@ def process_single_game(game):
     
     for move_num, (board, move) in enumerate(board_and_moves, 1):
         move_factor = (
-            (1.0 + (move_num / total_moves) * 0.5)  # Endgame Prioritization
-            * base_weights[board.turn]              # Winner Prioritization
+            (1.0 + (move_num / total_moves) * 0.5)  
+            * base_weights[board.turn]      
         )
         
         X.append(encode_board(board))
@@ -129,7 +117,6 @@ def prepare_dataset(games, parallelization_factor: int = 1):
     X, y, weights_all = [], [], []
     processed_games = 0
 
-    # Parallel processing since board encoding is very time consuming
     with ProcessPoolExecutor(max_workers=parallelization_factor) as executor:
         future_to_game = {
             executor.submit(process_single_game, game): game 
@@ -160,34 +147,26 @@ def prepare_dataset(games, parallelization_factor: int = 1):
     return X, y, weights
 
 
-#############################################
-# Neural Network 
-#############################################
-
 def build_chess_cnn() -> models.Model:
     print("[NEURAL] - Creating Model")
 
-    # Input layer 
     board_input = layers.Input(shape=(8, 8, 17), name='board_input')
     
-    # Split Input by pieces and info
     piece_channels = layers.Lambda(lambda x: x[..., :12], name='piece_channels')(board_input)
     info_channels = layers.Lambda(lambda x: x[..., 12:], name='info_channels')(board_input)
 
-    # Piece Position CNN
     piece_conv = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(piece_channels)
     piece_conv = layers.BatchNormalization()(piece_conv)
-    residual = piece_conv # Residual Connnection
+    residual = piece_conv 
     piece_conv = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(piece_conv)
     piece_conv = layers.BatchNormalization()(piece_conv)
     piece_conv = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(piece_conv)
     piece_conv = layers.BatchNormalization()(piece_conv)
-    piece_conv = layers.Add()([piece_conv, residual]) # Add Residual Connection
+    piece_conv = layers.Add()([piece_conv, residual]) 
     piece_conv = layers.Conv2D(128, (1, 1), activation='relu')(piece_conv)
     piece_conv = layers.BatchNormalization()(piece_conv)
     piece_conv = layers.SpatialDropout2D(0.1)(piece_conv)
 
-    # Board Info CNN
     info_conv = layers.Conv2D(32, (3, 3), activation='relu', padding='same')(info_channels)
     info_conv = layers.BatchNormalization()(info_conv)
     info_conv2 = layers.GlobalAveragePooling2D()(info_conv)
@@ -197,23 +176,19 @@ def build_chess_cnn() -> models.Model:
     info_conv = layers.Multiply()([info_conv, info_conv2])
     info_conv = layers.SpatialDropout2D(0.1)(info_conv)
 
-    # Combine features
     combined = layers.Concatenate()([piece_conv, info_conv])
 
-    # Combined Convolutional Block
     x = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(combined)
     x = layers.BatchNormalization()(x)
     x = layers.GlobalAveragePooling2D()(x)
     
-    # Classification
     dense1 = layers.Dense(512, activation='relu')(x)
     dense1 = layers.BatchNormalization()(dense1)
     dense1 = layers.Dropout(0.1)(dense1)
     dense2 = layers.Dense(512, activation='relu')(dense1)
     dense2 = layers.BatchNormalization()(dense2)
-    dense2 = layers.Add()([dense1, dense2]) # Add residual connection
+    dense2 = layers.Add()([dense1, dense2]) 
     
-    # Output Layer
     outputs = layers.Dense(4096, activation='softmax')(dense2)
     model = models.Model(inputs=board_input, outputs=outputs, name='chess_cnn')
     

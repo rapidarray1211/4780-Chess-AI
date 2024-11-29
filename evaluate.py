@@ -8,9 +8,8 @@ from engine.chessEngine import ChessEngine
 engine_name = "models/movepredictorV2_34.keras"
 fname = "data/model34.txt"
 
-#stock vs engine game
 def playGame(stock,engine):
-    player = 0 #engine will go first
+    player = 0
     n_moves = 0
     board = chess.Board()
     while not board.is_game_over():
@@ -24,7 +23,6 @@ def playGame(stock,engine):
             board.push(result)
             player = 1
     
-    #return number of moves and winning player (0 for stock, 1 for engine)
     return (n_moves,player)
     
 
@@ -44,7 +42,7 @@ stock5.configure({"Skill Level": 20})
 engine = ChessEngine(engine_name, 1, 3)
 max_iter = 50
 iter = 0
-n_wins = [0,0,0,0,0] #keep track of number of wins if any
+n_wins = [0,0,0,0,0]
 
 f = open(fname,"w")
 f.write("iter   Level 01   Level 05   Level 10   Level 15   Level 20\n")

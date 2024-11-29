@@ -8,7 +8,6 @@ import numpy as np
 engine = ChessEngine("models/movepredictorV2_24.keras", 1, 3)
 
 def play_game_pgn(pgn_file):
-    # Load games from the PGN file
     print(f"Loading games from {pgn_file}.")
     games = load_pgn_file(pgn_file, 100)
     if games:
@@ -42,25 +41,20 @@ def play_ai_vs_ai(num_games=100):
     return all_accuracy_scores
 
 def visualize_accuracy_scores(all_accuracy_scores):
-    # Find the maximum number of moves in any game
     max_moves = max(len(scores) for scores in all_accuracy_scores)
     
-    # Initialize a list to hold the sum of centipawn losses for each move number
     summed_scores = np.zeros(max_moves)
     move_counts = np.zeros(max_moves)
     
-    # Sum the centipawn losses for each move number across all games
     for game_scores in all_accuracy_scores:
         for i, score in enumerate(game_scores):
-            if score <= 8000:  # Filter out scores greater than 8000
-                capped_score = min(score, 1000)  # Cap the score at 1000
+            if score <= 8000: 
+                capped_score = min(score, 1000)  
                 summed_scores[i] += capped_score
                 move_counts[i] += 1
     
-    # Calculate the average centipawn loss for each move number
     average_scores = summed_scores / move_counts
     
-    # Plot the average centipawn loss per move
     plt.plot(average_scores)
     plt.xlabel('Move Number')
     plt.ylabel('Average Centipawn Loss')
