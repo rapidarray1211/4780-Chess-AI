@@ -17,12 +17,11 @@ from threading import Lock
 
 class ChessEngine:
     model: models.Sequential
-    depth: int # Depth to search when evaluating a move
-    numMoveChecks: int # Checks n top moves from neural network with min-max and PeSTO evaluation
+    depth: int
+    numMoveChecks: int
     tp_finds: int
 
     def __init__(self, modelPath: str, depth: int, moves: int):
-        # Load Model
         self.model = models.load_model(modelPath, safe_mode=False)
         self.depth = depth
         self.numMoveChecks = moves
@@ -34,22 +33,17 @@ class ChessEngine:
         encoded_board = np.expand_dims(encoded_board, axis=-1)
         encoded_board = np.expand_dims(encoded_board, axis=0)
 
-        # Predict move probabilities
         move_probabilities = self.model.predict(encoded_board, verbose = 1)[0]
-
-        # Filter by legal moves
         legal_moves_probabilities = {
             move: move_probabilities[encode_move(move)] for move in board.legal_moves
         }
 
-        # Sort legal moves by their predicted probabilities (highest first)
         sorted_moves = sorted(
             legal_moves_probabilities.items(),
             key=lambda item: item[1],
             reverse=True
         )
         
-        # Return top n moves
         return sorted_moves[:self.numMoveChecks]
     
     def evaluate_move(self, current_score: int, move: chess.Move, board: chess.Board, probability: float):
@@ -58,7 +52,6 @@ class ChessEngine:
         beta = float('inf')
         value = 0
 
-        # Start alpha-beta pruning search on board
         if board.turn == chess.WHITE:
             value, _ = self.alphaBetaMax(board, alpha, beta, self.depth)
         else:
@@ -71,12 +64,10 @@ class ChessEngine:
     def predict_best_move(self, board: chess.Board, networkOnly: bool):
         start_time = time.time()
 
-        # Get Moves from Neural Network
         sorted_moves = self.get_legal_move_probabilities(board)
         if(networkOnly): # Skips Static Analysis
             return sorted_moves[0][0] if len(sorted_moves) > 0 else None
 
-        # Initialize move variables
         best_value = 0
         current_score = self.eval(board)
         best_move = sorted_moves[0][0]
@@ -87,8 +78,6 @@ class ChessEngine:
         moves = []
         probs = []
 
-        # Evaluate moves using alpha-beta pruning 
-        # Threading used since alpha-beta pruning is time consuming
         with concurrent.futures.ThreadPoolExecutor() as executor:
             futures = []
             for move, probability in sorted_moves:
@@ -101,10 +90,8 @@ class ChessEngine:
                 moves.append(gmove)
                 probs.append(prob)
 
-        # Normalize value differences
         val_diffs_norm = (val_diffs - np.min(val_diffs)) / (np.max(val_diffs) - np.min(val_diffs))
 
-        # Calculate Final Move Scoring
         for vdif, value, gmove, prob, static_change in zip(val_diffs_norm, vals, moves, probs, val_diffs):
             wvalue = (vdif * 0.4) + (prob * 0.6)
             if(wvalue > best_value):
@@ -120,16 +107,13 @@ class ChessEngine:
 
     def eval(self, board: chess.Board) -> int:
 
-        # End Game Conditions
         if board.is_checkmate():
             return -99999 if board.turn else 99999
         if board.is_stalemate() or board.is_insufficient_material():
             return 0
 
-        # Preform Static Evaluation
         eval_score = static_eval(board, WHITE if board.turn else BLACK)
         
-        # Cache the evaluation
         return eval_score
     
 

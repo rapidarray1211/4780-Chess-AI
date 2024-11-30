@@ -5,7 +5,6 @@ import pandas as pd
 import io
 
 def load_pgn_file(filepath, numGames, minELO=0):
-    # Returns list of games
     games = []
     with open(filepath, buffering=1048576) as pgn_file:
         while numGames > 0:
@@ -30,7 +29,6 @@ def load_pgn_file(filepath, numGames, minELO=0):
             except ValueError:
                 result = ""
             
-            # Add game if Elo ratings are above the minimum threshold
             if minELO <= 0 or (elo1 >= minELO and elo2 >= minELO) and type.find("Classical"):
                 games.append((game, result))
                 numGames -= 1

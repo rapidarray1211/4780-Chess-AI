@@ -25,7 +25,6 @@ def evaluate_move_stockfish(board: chess.Board):
 
     
 def evaluate_game_stockfish(move_sequence):
-    # Rather than evaluate a single move, this attempts to evaluate a move sequence
     board = chess.Board()
     accuracy_scores = []
     
@@ -37,7 +36,6 @@ def evaluate_game_stockfish(move_sequence):
                 
                 evaluation = engine.analyse(board, chess.engine.Limit(depth=stockfish_depth))
                 best_move = engine.play(board, chess.engine.Limit(time=0.2)) 
-                # If increase time, it increases accuracy but decreases speed (obviously)
                 
                 eval_score = evaluation['score'].relative.score(mate_score=10000)
                 
@@ -45,7 +43,6 @@ def evaluate_game_stockfish(move_sequence):
                 best_move_score = best_move_evaluation['score'].relative.score(mate_score=10000)
                 # We compare the centipawn loss between the best move, and the move given to get a delta. Average the delta for average centipawn loss
                 
-                # print(f"Move: {move_str} -> Eval: {eval_score}, Best Move: {best_move_score}")
                 
                 accuracy_score = abs(eval_score - best_move_score)
                 accuracy_scores.append(accuracy_score)
